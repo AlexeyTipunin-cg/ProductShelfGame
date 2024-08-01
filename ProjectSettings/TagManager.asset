@@ -11,7 +11,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Products
   - 
   - 
   - 
@@ -40,6 +40,12 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Shelf
+    uniqueID: 3813251931
+    locked: 0
+  - name: Balls
+    uniqueID: 4023630173
     locked: 0
   - name: DragLayer
     uniqueID: 62460793
