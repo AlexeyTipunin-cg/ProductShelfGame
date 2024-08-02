@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using Zenject;
 
 namespace Assets.Scripts.Products
 {
@@ -12,12 +13,11 @@ namespace Assets.Scripts.Products
         private bool _isWrongSwap;
 
         private Vector3 _initialOffset;
+        private IGameCommands _gameCommands;
 
         private ProductObject _currentSelected;
         private ProductObject _intersectedObject;
 
-        public event Action onSwapEnd;
-        public event Action onWrongSwap;
 
         private void Awake()
         {
@@ -25,6 +25,11 @@ namespace Assets.Scripts.Products
             InputController.onMouseDown += OnMouseDownInternal;
         }
 
+        [Inject]
+        public void Init(IGameCommands commands)
+        {
+            _gameCommands = commands;
+        }
         private void OnMouseDownInternal()
         {
             _canSwap = false;
@@ -114,24 +119,31 @@ namespace Assets.Scripts.Products
                     seq.Insert(0, _currentSelected.PlayReturnAnimation());
                     seq.Insert(0, _intersectedObject.PlayReturnAnimation());
 
-                    onSwapEnd?.Invoke();
+                    _gameCommands.OnSuccsesfullSwap.Execute();
+
                 }
                 else
                 {
                     if (_isWrongSwap)
                     {
                         seq.Insert(0, _currentSelected.PlayWrongAnimation());
+                        _gameCommands.OnWrongSwap.Execute();
                     }
                     else
                     {
                         seq.Insert(0, _currentSelected.PlayReturnAnimation());
                     }
 
+                    seq.OnComplete(() =>
+                    {
+                        _gameCommands.OnWrongSwap.Execute();
+                    });
+
                 }
 
                 seq.OnComplete(() =>
                 {
-                    onSwapEnd?.Invoke();
+                    _gameCommands.OnSwapEnd.Execute();
                 });
 
                 _currentSelected = null;

@@ -15,15 +15,16 @@ namespace Assets.Scripts.Products
         private Dictionary<ProductTypes, Vector3[]> _productPosOnShelf = new Dictionary<ProductTypes, Vector3[]>();
         private List<ProductPostion> _productPositions = new List<ProductPostion>();
         private List<ProductObject> _allProductViews;
+
         private IProductFactory _productFactory;
         private RackView _rackView;
-        private GameCommands _gameModel;
+        private IGameCommands _gameModel;
 
         private CompositeDisposable _compositeDisposable;
 
 
         [Inject]
-        public void Init(IProductFactory productFactory, GameCommands gameModel, RackView rackView)
+        public void Init(IProductFactory productFactory, IGameCommands gameModel, RackView rackView)
         {
             _productFactory = productFactory;
             _rackView = rackView;
@@ -42,21 +43,26 @@ namespace Assets.Scripts.Products
 
             CreateAndResuffle();
             _gameModel.RestartGameCommand.Subscribe(_ => OnGameRestart()).AddTo(this);
-
-            rackView.GetFiledView().onSwapEnd += CheckGameState;
+            _gameModel.OnSwapEnd.Subscribe(_ => CheckGameState()).AddTo(this);
         }
 
         private void CheckGameState()
         {
             if (CheckIfEndGame())
             {
-                Observable.Timer(TimeSpan.FromSeconds(0.5)).Subscribe(_ => _gameModel.FinishGameCommand.Execute());
+                Observable.Timer(TimeSpan.FromSeconds(0.5)).Subscribe(
+                    _ => CallFinishGameCommand());
             }
             else
             {
                 InputController.BlockInput = false;
             }
 
+        }
+
+        private void CallFinishGameCommand()
+        {
+            _gameModel.FinishGameCommand.Execute();
         }
 
         private void OnGameRestart()
@@ -143,11 +149,6 @@ namespace Assets.Scripts.Products
             }
 
             seq.OnComplete(() => InputController.BlockInput = false);
-        }
-
-        private void OnDestroy()
-        {
-            _rackView.GetFiledView().onSwapEnd -= CheckGameState;
         }
     }
 }

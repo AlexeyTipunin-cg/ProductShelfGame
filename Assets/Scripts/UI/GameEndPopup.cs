@@ -9,25 +9,18 @@ namespace Assets.Scripts.UI
     public class GameEndPopup : MonoBehaviour
     {
         [SerializeField] private Button _restartButton;
-        private GameCommands _gameModel;
-
-        private void Awake()
-        {
-            gameObject.SetActive(false);
-        }
+        private IGameCommands _gameCommands;
 
         [Inject]
-        private void Init(GameCommands gameModel)
+        private void Init(IGameCommands gameCommands)
         {
-            _gameModel = gameModel;
-            gameModel.FinishGameCommand.Subscribe(_ => gameObject.SetActive(true)).AddTo(this);
+            _gameCommands = gameCommands;
             _restartButton.onClick.AddListener(RestartGame);
         }
 
         private void RestartGame()
         {
-            gameObject.SetActive(false);
-            _gameModel.RestartGameCommand.Execute();
+            _gameCommands.RestartGameCommand.Execute();
         }
     }
 }

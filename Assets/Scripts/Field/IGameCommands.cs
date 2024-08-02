@@ -6,5 +6,12 @@ namespace Assets.Scripts.Products
     {
         ReactiveCommand FinishGameCommand { get; }
         ReactiveCommand RestartGameCommand { get; }
+
+        ReactiveCommand OnSuccsesfullSwap { get; }
+
+        ReactiveCommand OnWrongSwap { get; }
+
+        ReactiveCommand OnSwapEnd { get; }
+
     }
 }
