@@ -36,6 +36,7 @@ namespace Assets.Scripts.Products
                     _isDragging = true;
                     _initialOffset = productView.Root.Postion - Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     _currentSelected = productView.Root;
+                    _intersectedObject = null;
                     _currentSelected.SetDragLayer();
                     productView.PlayScaleAnimation();
 
@@ -51,7 +52,8 @@ namespace Assets.Scripts.Products
                 productView.Root.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + _initialOffset;
                 RaycastHit2D[] results = new RaycastHit2D[2];
 
-                int count = Physics2D.RaycastNonAlloc(productView.Root.transform.position, Camera.main.transform.forward, results, 30, 1 << (int)GameLayers.Products);
+                int count = Physics2D.RaycastNonAlloc(productView.Root.transform.position, Camera.main.transform.forward, results, 5, 1 << (int)GameLayers.Products);
+
                 if (count == 2)
                 {
                     for (int i = 0; i < results.Length; i++)
@@ -73,9 +75,20 @@ namespace Assets.Scripts.Products
             }
         }
 
+        private void OnDrawGizmos()
+        {
+            if (_currentSelected != null)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawRay(_currentSelected.transform.position, Camera.main.transform.forward);
+
+            }
+        }
+
         private void OnMouseUpInternal()
         {
             _isDragging = false;
+            StopAllCoroutines();
             if (_currentSelected != null)
             {
 

@@ -268,3 +268,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _productView: {fileID: 7521148972955926551}
+  _productType: 1

@@ -7,11 +7,14 @@ namespace Assets.Scripts.Products
     public class ProductObject : MonoBehaviour
     {
         [SerializeField]private ProductView _productView;
+        [SerializeField]private ProductTypes _productType;
 
         public Vector3 CurrentPos { get; set; }
         public ProductView ProductView => _productView;
 
         public Vector3 Postion => transform.position;
+
+        public ProductTypes PoductType => _productType;
 
         public void PlayScaleAnimation()
         {
