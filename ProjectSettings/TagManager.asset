@@ -44,7 +44,7 @@ TagManager:
   - name: Shelf
     uniqueID: 3813251931
     locked: 0
-  - name: Balls
+  - name: Products
     uniqueID: 4023630173
     locked: 0
   - name: DragLayer

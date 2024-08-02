@@ -21,9 +21,11 @@ namespace Assets.Scripts.Products
         private RackView _rackView;
         private GameModel _gameModel;
 
+        private CompositeDisposable _compositeDisposable;
+
 
         [Inject]
-        public void Init(IProductFactory productFactory, GameModel gameModel,  RackView rackView)
+        public void Init(IProductFactory productFactory, GameModel gameModel, RackView rackView)
         {
             _productFactory = productFactory;
             _rackView = rackView;
@@ -42,7 +44,7 @@ namespace Assets.Scripts.Products
             }
 
             CreateAndResuffle();
-            _gameModel.RestartGameCommand.Subscribe(() => CreateAndResuffle()).AddTo(this);
+            _gameModel.RestartGameCommand.Subscribe(_ => OnGameRestart()).AddTo(this);
 
             rackView.GetFiledView().onSwapEnd += CheckGameState;
         }
@@ -51,13 +53,22 @@ namespace Assets.Scripts.Products
         {
             if (CheckIfEndGame())
             {
-                _gameModel.FinishGameCommand.Execute();
+                Observable.Timer(TimeSpan.FromSeconds(0.5)).Subscribe(_ => _gameModel.FinishGameCommand.Execute());
             }
             else
             {
                 InputController.BlockInput = false;
             }
 
+        }
+
+        private void OnGameRestart()
+        {
+            _compositeDisposable.Dispose();
+            _compositeDisposable.Clear();
+            _compositeDisposable = null;
+
+            CreateAndResuffle();
         }
 
         public bool CheckIfEndGame()
@@ -77,6 +88,7 @@ namespace Assets.Scripts.Products
         public void CreateAndResuffle()
         {
             InputController.BlockInput = true;
+            _compositeDisposable = new CompositeDisposable();
             CreateCorrectField();
             StartCoroutine(Reshuffle());
         }

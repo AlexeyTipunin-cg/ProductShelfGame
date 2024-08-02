@@ -8,7 +8,7 @@ namespace Assets.Scripts.Products
 {
     public enum SpriteLayers
     {
-        Products = 2,
-        Drag = 3
+        Products,
+        DragLayer
     }
 }

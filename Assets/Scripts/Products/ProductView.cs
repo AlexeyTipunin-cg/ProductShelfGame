@@ -12,15 +12,11 @@ namespace Assets.Scripts.Products
         [SerializeField] private SpriteRenderer _spriteRenderer;
 
         private Vector3 _initialOffset;
-        private bool _isDragging = false;
-        private static bool _playingAnimation = false;
 
         private float _bigScale = 1.1f;
         private float _animationTime = 0.1f;
 
         private Sequence _tween;
-
-        public event Action OnProductDown;
         public ProductObject Root => _root;
 
         public void PlayScaleAnimation()
@@ -40,19 +36,23 @@ namespace Assets.Scripts.Products
 
         public void SetDragLayer()
         {
-            int id = SortingLayer.NameToID("DragLayer");
-            _spriteRenderer.sortingLayerID = id;
+            SetSpriteLayer(SpriteLayers.DragLayer.ToString());
 
             gameObject.layer = (int)GameLayers.Drag;
         }
 
         public void SetProductLayer()
         {
-            int id = SortingLayer.NameToID("Balls");
-            _spriteRenderer.sortingLayerID = id;
+            SetSpriteLayer(SpriteLayers.Products.ToString());
 
             gameObject.layer = (int)GameLayers.Products;
 
+        }
+
+        private void SetSpriteLayer(string name)
+        {
+            int id = SortingLayer.NameToID(name);
+            _spriteRenderer.sortingLayerID = id;
         }
 
         private void OnDestroy()

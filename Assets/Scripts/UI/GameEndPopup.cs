@@ -20,7 +20,7 @@ namespace Assets.Scripts.UI
         private void Init(GameModel gameModel)
         {
             _gameModel = gameModel;
-            gameModel.FinishGameCommand.Subscribe(() => gameObject.SetActive(true)).AddTo(this);
+            gameModel.FinishGameCommand.Subscribe(_ => gameObject.SetActive(true)).AddTo(this);
             _restartButton.onClick.AddListener(RestartGame);
         }
 
