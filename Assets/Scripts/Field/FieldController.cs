@@ -3,8 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UniRx;
 using UnityEngine;
 using Zenject;
@@ -14,9 +12,9 @@ namespace Assets.Scripts.Products
     public class FieldController : MonoBehaviour
     {
         private Dictionary<ProductTypes, List<ProductObject>> _typesToProducts = new Dictionary<ProductTypes, List<ProductObject>>();
-        private Dictionary<ProductTypes, Vector3[]> _fieldsPositions = new Dictionary<ProductTypes, Vector3[]>();
+        private Dictionary<ProductTypes, Vector3[]> _productPosOnShelf = new Dictionary<ProductTypes, Vector3[]>();
         private List<ProductPostion> _productPositions = new List<ProductPostion>();
-        private List<ProductObject> allProducts;
+        private List<ProductObject> _allProductViews;
         private IProductFactory _productFactory;
         private RackView _rackView;
         private GameCommands _gameModel;
@@ -35,12 +33,11 @@ namespace Assets.Scripts.Products
             {
                 ShelfView shelf = _rackView.GetShelf(i);
                 Vector3[] positions = shelf.SpawnPoints.Select(tr => tr.position).ToArray();
-                _fieldsPositions[shelf.ShelfType] = positions;
+                _productPosOnShelf[shelf.ShelfType] = positions;
                 foreach (var p in positions)
                 {
                     _productPositions.Add(new ProductPostion { shelfType = shelf.ShelfType, position = p });
                 }
-
             }
 
             CreateAndResuffle();
@@ -74,7 +71,7 @@ namespace Assets.Scripts.Products
         public bool CheckIfEndGame()
         {
             bool allCorrect = true;
-            foreach (ProductObject product in allProducts)
+            foreach (ProductObject product in _allProductViews)
             {
                 if (!product.IsCorrectShelf())
                 {
@@ -95,41 +92,41 @@ namespace Assets.Scripts.Products
 
         public void CreateCorrectField()
         {
-            if (allProducts == null)
+            if (_allProductViews == null)
             {
-                allProducts = new List<ProductObject>();
+                _allProductViews = new List<ProductObject>();
                 for (int i = 0; i < _rackView.Length; i++)
                 {
                     ShelfView shelf = _rackView.GetShelf(i);
                     _typesToProducts[shelf.ShelfType] = new List<ProductObject>();
-                    foreach (Vector3 pos in _fieldsPositions[shelf.ShelfType])
+                    foreach (Vector3 pos in _productPosOnShelf[shelf.ShelfType])
                     {
                         ProductObject product = _productFactory.CreateProduct(shelf.ShelfType, pos, transform);
                         _typesToProducts[shelf.ShelfType].Add(product);
                     }
                 }
 
-                allProducts = _typesToProducts.Values.SelectMany(x => x).ToList();
+                _allProductViews = _typesToProducts.Values.SelectMany(x => x).ToList();
             }
             else
             {
                 for (int i = 0; i < _rackView.Length; i++)
                 {
                     ShelfView shelf = _rackView.GetShelf(i);
-                    for (int j = 0; j < _fieldsPositions[shelf.ShelfType].Length; j++)
+                    for (int j = 0; j < _productPosOnShelf[shelf.ShelfType].Length; j++)
                     {
-                        Vector3 pos = _fieldsPositions[shelf.ShelfType][j];
+                        Vector3 pos = _productPosOnShelf[shelf.ShelfType][j];
                         _typesToProducts[shelf.ShelfType][j].transform.position = pos;
                     }
                 }
             }
 
             IList<ProductPostion> shuffled = _productPositions.Shuffle();
-            if (allProducts.Count == shuffled.Count)
+            if (_allProductViews.Count == shuffled.Count)
             {
                 for (int i = 0; i < shuffled.Count; i++)
                 {
-                    allProducts[i].ProductPostion = shuffled[i];
+                    _allProductViews[i].ProductPostion = shuffled[i];
                 }
             }
         }
@@ -140,7 +137,7 @@ namespace Assets.Scripts.Products
 
             Sequence seq = DOTween.Sequence();
 
-            foreach (ProductObject view in allProducts)
+            foreach (ProductObject view in _allProductViews)
             {
                 seq.Insert(0.1f, view.PlayReturnAnimation());
             }

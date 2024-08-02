@@ -9,9 +9,8 @@ namespace Assets.Scripts.Products
     {
         private bool _isDragging;
         private bool _canSwap;
-        private bool _isWrong;
+        private bool _isWrongSwap;
 
-        private bool _playFlyAnimation;
         private Vector3 _initialOffset;
 
         private ProductObject _currentSelected;
@@ -38,35 +37,35 @@ namespace Assets.Scripts.Products
             {
                 if (results[0].collider.TryGetComponent(out ProductObjectCollider productView))
                 {
+                    _currentSelected = productView.Root;
                     if (productView.Root.IsCorrectShelf())
                     {
                         return;
                     }
 
                     _isDragging = true;
-                    _initialOffset = productView.Root.Postion - Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    _currentSelected = productView.Root;
+                    _initialOffset = _currentSelected.Postion - Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     _intersectedObject = null;
                     _currentSelected.SetDragLayer();
                     _currentSelected.PlayScaleAnimation();
 
-                    StartCoroutine(DragMovement(productView));
+                    StartCoroutine(DragMovement(_currentSelected));
                 }
             }
         }
 
-        private IEnumerator DragMovement(ProductObjectCollider productView)
+        private IEnumerator DragMovement(ProductObject productView)
         {
             while (_isDragging)
             {
-                productView.Root.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + _initialOffset;
+                productView.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + _initialOffset;
                 RaycastHit2D[] results = new RaycastHit2D[1];
 
-                int count = Physics2D.RaycastNonAlloc(productView.Root.transform.position, Camera.main.transform.forward, results, 5, 1 << (int)GameLayers.Products);
+                int count = Physics2D.RaycastNonAlloc(productView.transform.position, Camera.main.transform.forward, results, 5, 1 << (int)GameLayers.Products);
 
                 _intersectedObject = null;
                 _canSwap = false;
-                _isWrong = true;
+                _isWrongSwap = true;
 
                 if (count > 0)
                 {
@@ -74,21 +73,21 @@ namespace Assets.Scripts.Products
                     {
                         if (!productViewCollided.Root.IsCorrectShelf())
                         {
-                            if (productView.Root.PoductType == productViewCollided.Root.ProductPostion.shelfType)
+                            if (productView.PoductType == productViewCollided.Root.ProductPostion.shelfType)
                             {
                                 _intersectedObject = productViewCollided.Root;
                                 _canSwap = true;
-                                _isWrong = false;
+                                _isWrongSwap = false;
                             }
-
                         }
                     }
 
                 }
                 else
                 {
-                    _isWrong = false;
+                    _isWrongSwap = false;
                 }
+
                 yield return null;
             }
         }
@@ -106,7 +105,6 @@ namespace Assets.Scripts.Products
 
                 if (_canSwap)
                 {
-
                     ProductPostion temp = _intersectedObject.ProductPostion;
                     _intersectedObject.ProductPostion = _currentSelected.ProductPostion;
                     _currentSelected.ProductPostion = temp;
@@ -120,7 +118,7 @@ namespace Assets.Scripts.Products
                 }
                 else
                 {
-                    if (_isWrong)
+                    if (_isWrongSwap)
                     {
                         seq.Insert(0, _currentSelected.PlayWrongAnimation());
                     }
@@ -139,7 +137,7 @@ namespace Assets.Scripts.Products
                 _currentSelected = null;
                 _intersectedObject = null;
                 _canSwap = false;
-                _isWrong = false;
+                _isWrongSwap = false;
             }
         }
 
