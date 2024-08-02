@@ -4,11 +4,11 @@ using UniRx;
 
 namespace Assets.Scripts.Products
 {
-    public class GameModel
+    public class GameCommands
     {
         public ReactiveCommand FinishGameCommand { get; }
         public ReactiveCommand RestartGameCommand { get;}
-        public GameModel()
+        public GameCommands()
         {
             RestartGameCommand = new ReactiveCommand();
             FinishGameCommand = new ReactiveCommand();

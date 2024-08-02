@@ -19,13 +19,13 @@ namespace Assets.Scripts.Products
         private List<ProductObject> allProducts;
         private IProductFactory _productFactory;
         private RackView _rackView;
-        private GameModel _gameModel;
+        private GameCommands _gameModel;
 
         private CompositeDisposable _compositeDisposable;
 
 
         [Inject]
-        public void Init(IProductFactory productFactory, GameModel gameModel, RackView rackView)
+        public void Init(IProductFactory productFactory, GameCommands gameModel, RackView rackView)
         {
             _productFactory = productFactory;
             _rackView = rackView;

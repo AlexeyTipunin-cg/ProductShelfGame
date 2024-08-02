@@ -182,10 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2c795c6d1280884d9433928701e0d23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rigidbody: {fileID: 0}
-  _collider: {fileID: 1688608689170771054}
   _root: {fileID: 7326704866237330238}
-  _spriteRenderer: {fileID: 648384398783236421}
 --- !u!58 &1688608689170771054
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -269,3 +266,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _productView: {fileID: 7521148972955926551}
   _productType: 1
+  _spriteRenderer: {fileID: 648384398783236421}

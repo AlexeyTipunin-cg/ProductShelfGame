@@ -8,7 +8,7 @@ public class GameInstaller : MonoInstaller
     [SerializeField] RackView _rackView;
     public override void InstallBindings()
     {
-        Container.Bind<GameModel>().AsSingle();
+        Container.Bind<GameCommands>().AsSingle();
         Container.Bind<IProductFactory>().To<ProductsFactory>().FromComponentInNewPrefab(_productsFactory).AsSingle();
         Container.Bind<RackView>().FromInstance(_rackView).AsSingle();
     }

@@ -18,7 +18,7 @@ namespace Assets.Scripts.Products
         private ProductObject _intersectedObject;
 
         public event Action onSwapEnd;
-
+        public event Action onWrongSwap;
 
         private void Awake()
         {
@@ -36,7 +36,7 @@ namespace Assets.Scripts.Products
             int count = Physics2D.RaycastNonAlloc(mousePos, Camera.main.transform.forward, results, 30, 1 << (int)GameLayers.Products);
             if (count > 0)
             {
-                if (results[0].collider.TryGetComponent(out ProductView productView))
+                if (results[0].collider.TryGetComponent(out ProductObjectCollider productView))
                 {
                     if (productView.Root.IsCorrectShelf())
                     {
@@ -48,14 +48,14 @@ namespace Assets.Scripts.Products
                     _currentSelected = productView.Root;
                     _intersectedObject = null;
                     _currentSelected.SetDragLayer();
-                    productView.PlayScaleAnimation();
+                    _currentSelected.PlayScaleAnimation();
 
                     StartCoroutine(DragMovement(productView));
                 }
             }
         }
 
-        private IEnumerator DragMovement(ProductView productView)
+        private IEnumerator DragMovement(ProductObjectCollider productView)
         {
             while (_isDragging)
             {
@@ -70,7 +70,7 @@ namespace Assets.Scripts.Products
 
                 if (count > 0)
                 {
-                    if (results[0].collider.TryGetComponent(out ProductView productViewCollided))
+                    if (results[0].collider.TryGetComponent(out ProductObjectCollider productViewCollided))
                     {
                         if (!productViewCollided.Root.IsCorrectShelf())
                         {

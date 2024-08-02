@@ -19,6 +19,7 @@ namespace Assets.Scripts.Products
             {
                 return;
             }
+
             if (Input.GetMouseButtonDown(0)) {
                 onMouseDown?.Invoke();
             }

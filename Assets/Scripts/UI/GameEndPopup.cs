@@ -9,7 +9,7 @@ namespace Assets.Scripts.UI
     public class GameEndPopup : MonoBehaviour
     {
         [SerializeField] private Button _restartButton;
-        private GameModel _gameModel;
+        private GameCommands _gameModel;
 
         private void Awake()
         {
@@ -17,7 +17,7 @@ namespace Assets.Scripts.UI
         }
 
         [Inject]
-        private void Init(GameModel gameModel)
+        private void Init(GameCommands gameModel)
         {
             _gameModel = gameModel;
             gameModel.FinishGameCommand.Subscribe(_ => gameObject.SetActive(true)).AddTo(this);
