@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Assets.Scripts.Products
 {
-    public enum SpriteLayers
+    public struct ProductPostion
     {
-        Products = 2,
-        Drag = 3
+        public ProductTypes shelfType;
+        public Vector3 position;
+
     }
 }

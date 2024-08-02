@@ -1,18 +1,24 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Assets.Scripts.Products
 {
-    public class FieldView : MonoBehaviour
+    public class FieldView : MonoBehaviour, IFieldView
     {
         private bool _isDragging;
         private bool _canSwap;
+        private bool _isWrong;
+
         private bool _playFlyAnimation;
         private Vector3 _initialOffset;
 
         private ProductObject _currentSelected;
         private ProductObject _intersectedObject;
+
+        public event Action onSwapEnd;
+
 
         private void Awake()
         {
@@ -32,6 +38,10 @@ namespace Assets.Scripts.Products
             {
                 if (results[0].collider.TryGetComponent(out ProductView productView))
                 {
+                    if (productView.Root.IsCorrectShelf())
+                    {
+                        return;
+                    }
 
                     _isDragging = true;
                     _initialOffset = productView.Root.Postion - Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -50,38 +60,36 @@ namespace Assets.Scripts.Products
             while (_isDragging)
             {
                 productView.Root.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + _initialOffset;
-                RaycastHit2D[] results = new RaycastHit2D[2];
+                RaycastHit2D[] results = new RaycastHit2D[1];
 
                 int count = Physics2D.RaycastNonAlloc(productView.Root.transform.position, Camera.main.transform.forward, results, 5, 1 << (int)GameLayers.Products);
 
-                if (count == 2)
-                {
-                    for (int i = 0; i < results.Length; i++)
-                    {
+                _intersectedObject = null;
+                _canSwap = false;
+                _isWrong = true;
 
-                        if (results[i].collider.TryGetComponent(out ProductView productViewCollided))
+                if (count > 0)
+                {
+                    if (results[0].collider.TryGetComponent(out ProductView productViewCollided))
+                    {
+                        if (!productViewCollided.Root.IsCorrectShelf())
                         {
-                            if (productViewCollided.Root != _currentSelected)
+                            if (productView.Root.PoductType == productViewCollided.Root.ProductPostion.shelfType)
                             {
                                 _intersectedObject = productViewCollided.Root;
                                 _canSwap = true;
-                                break;
+                                _isWrong = false;
                             }
+
                         }
                     }
 
                 }
+                else
+                {
+                    _isWrong = false;
+                }
                 yield return null;
-            }
-        }
-
-        private void OnDrawGizmos()
-        {
-            if (_currentSelected != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawRay(_currentSelected.transform.position, Camera.main.transform.forward);
-
             }
         }
 
@@ -89,30 +97,49 @@ namespace Assets.Scripts.Products
         {
             _isDragging = false;
             StopAllCoroutines();
+
             if (_currentSelected != null)
             {
 
+                InputController.BlockInput = true;
+                Sequence seq = DOTween.Sequence();
+
                 if (_canSwap)
                 {
-                    Vector3 temp = _intersectedObject.CurrentPos;
-                    _intersectedObject.CurrentPos = _currentSelected.CurrentPos;
-                    _currentSelected.CurrentPos = temp;
 
-                    Sequence seq = DOTween.Sequence();
+                    ProductPostion temp = _intersectedObject.ProductPostion;
+                    _intersectedObject.ProductPostion = _currentSelected.ProductPostion;
+                    _currentSelected.ProductPostion = temp;
+
+
                     _intersectedObject.SetDragLayer();
                     seq.Insert(0, _currentSelected.PlayReturnAnimation());
                     seq.Insert(0, _intersectedObject.PlayReturnAnimation());
-                    seq.OnComplete(() => _playFlyAnimation = false);
 
-
+                    onSwapEnd?.Invoke();
                 }
                 else
                 {
-                    _currentSelected.PlayReturnAnimation();
-                    _currentSelected = null;
-                    _intersectedObject = null;
-                    _canSwap = false;
+                    if (_isWrong)
+                    {
+                        seq.Insert(0, _currentSelected.PlayWrongAnimation());
+                    }
+                    else
+                    {
+                        seq.Insert(0, _currentSelected.PlayReturnAnimation());
+                    }
+
                 }
+
+                seq.OnComplete(() =>
+                {
+                    onSwapEnd?.Invoke();
+                });
+
+                _currentSelected = null;
+                _intersectedObject = null;
+                _canSwap = false;
+                _isWrong = false;
             }
         }
 
